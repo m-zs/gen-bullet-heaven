@@ -9,6 +9,7 @@ public class CharacterAttributes : MonoBehaviour
     [SerializeField] public float attackDamage = 10f;
     [SerializeField] public float spellDamage = 10f;
     [SerializeField] public float cooldownReduction = 0.1f;
+    [SerializeField] public float durationIncrease = 0;
 
 
     // Start is called before the first frame update

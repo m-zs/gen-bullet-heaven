@@ -1,9 +1,9 @@
 using UnityEngine;
 
+[RequireComponent(typeof(InputManager))]
+[RequireComponent(typeof(Rigidbody2D))]
 public class PlayerMovement : MonoBehaviour
 {
-    [SerializeField] float movementSpeed = 5f;
-
     private Rigidbody2D rb;
     private InputManager inputManager;
 
@@ -13,15 +13,7 @@ public class PlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
     }
 
-    private void Update()
-    {
-        if (inputManager)
-        {
-            OnMove();
-        }
-    }
-
-    private void OnMove()
+    public void Move(float movementSpeed)
     {
         rb.velocity = inputManager.movementInput * movementSpeed;
     }

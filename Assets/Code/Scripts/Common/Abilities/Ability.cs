@@ -7,6 +7,13 @@ public enum AbilityAssignment
     // Summon
 }
 
+public enum AbilityAimType
+{
+    Closest,
+    Random,
+    Aim
+}
+
 public enum AbilityTargetingType
 {
     Projectile,
@@ -118,4 +125,5 @@ public class Ability : ScriptableObject
     [SerializeField] public AbilityActivationType activationType;
     [SerializeField] public CharacterResource resourceUsed = CharacterResource.None;
     [SerializeField] public IAbility abilityClass;
+    [SerializeField] public AbilityAimType aimType;
 }

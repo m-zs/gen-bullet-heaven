@@ -1,6 +1,4 @@
-using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class AbilityManager : MonoBehaviour
@@ -11,10 +9,21 @@ public class AbilityManager : MonoBehaviour
 
     [SerializeField] Dictionary<AbilityAssignment, AbilityTargetingType[]> abilityTargetingTypeMappings;
     private CharacterManager characterManager;
+    [SerializeField] private bool addRandomAbility = false;
+
+    private Camera mainCamera;
+
+    private void Start()
+    {
+        mainCamera = Camera.main;
+    }
 
     private void Awake()
     {
         characterManager = GetComponent<CharacterManager>();
+
+        if (!addRandomAbility) return;
+
         abilityTargetingTypeMappings = new()
         {
             { AbilityAssignment.Melee, new[] {
@@ -35,18 +44,47 @@ public class AbilityManager : MonoBehaviour
 
     private void Update()
     {
-
         foreach (var ability in abilities)
         {
-            UseAbility(ability.Key, characterManager, null);
+            if (ability.Value.aimType == AbilityAimType.Closest)
+            {
+                CharacterManager currentTarget = EnemyScanner.GetNearestEnemy(transform.position, 100f, characterManager.teamId);
+                UseAbility(ability.Key, characterManager.transform.position, currentTarget.transform.position);
+            }
+
+            if (ability.Value.aimType == AbilityAimType.Random)
+            {
+                CharacterManager currentTarget = EnemyScanner.GetRandomEnemyOnScreen(mainCamera, characterManager.teamId);
+                if (currentTarget != null)
+                {
+                    UseAbility(ability.Key, characterManager.transform.position, currentTarget.transform.position);
+                }
+            }
+
+            if (ability.Value.aimType == AbilityAimType.Aim)
+            {
+                Vector2 cursorPosition = GetCursorWorldPosition();
+                UseAbility(ability.Key, characterManager.transform.position, cursorPosition);
+            }
         }
+    }
+
+    private Vector2 GetCursorWorldPosition()
+    {
+        Vector3 mousePos = Input.mousePosition;
+        mousePos.z = -mainCamera.transform.position.z;
+        return mainCamera.ScreenToWorldPoint(mousePos);
+    }
+
+    public List<CharacterManager> GetEnemiesInRange(float range)
+    {
+        return EnemyScanner.GetEnemiesInRadius(transform.position, range, characterManager.teamId);
     }
 
     public bool AddAbility(Ability ability)
     {
         if (ability == null)
         {
-            Debug.LogError("Ability is null");
             return false;
         }
 
@@ -54,11 +92,10 @@ public class AbilityManager : MonoBehaviour
         return true;
     }
 
-    public bool UseAbility(string name, CharacterManager initiator, CharacterManager target)
+    public bool UseAbility(string name, Vector3 initiator, Vector3 target)
     {
         if (name == null)
         {
-            Debug.LogError("Ability name is null");
             return false;
         }
 
@@ -69,12 +106,19 @@ public class AbilityManager : MonoBehaviour
 
         if (abilities.TryGetValue(name, out Ability ability))
         {
-            Debug.Log($"Using ability: {name}");
             timeLastUsed[ability.abilityName] = Time.time;
 
             GameObject projectileObj = new("PlayerProjectile");
             Projectile projectile = projectileObj.AddComponent<Projectile>();
-            projectile.Use(initiator.transform.position);
+
+            if (target != null)
+            {
+                projectile.Use(initiator, target);
+            }
+            else
+            {
+                projectile.Use(initiator);
+            }
             return true;
         }
 
@@ -92,11 +136,13 @@ public class AbilityManager : MonoBehaviour
         AbilityTargetingType abilityTargetingType = abilityTargetingTypeMappings[abilityAssignment][Random.Range(0, abilityTargetingTypeMappings[abilityAssignment].Length)];
         DamageType damageType = GetRandomEnumValue<DamageType>();
         AbilityActivationType abilityActivationType = GetRandomEnumValue<AbilityActivationType>();
+        AbilityAimType abilityAimType = GetRandomEnumValue<AbilityAimType>();
 
         Debug.Log($"Ability Assignment: {abilityAssignment}");
         Debug.Log($"Ability Targeting Type: {abilityTargetingType}");
         Debug.Log($"Damage Type: {damageType}");
         Debug.Log($"Ability Activation Type: {abilityActivationType}");
+        Debug.Log($"Ability Aim Type: {abilityAimType}");
 
         Ability ability = ScriptableObject.CreateInstance<Ability>();
         ability.abilityName = System.Guid.NewGuid().ToString();
@@ -107,6 +153,7 @@ public class AbilityManager : MonoBehaviour
         ability.activationType = abilityActivationType;
         ability.cooldown = 1f;
         ability.damage = 10f;
+        ability.aimType = abilityAimType;
 
         AddAbility(ability);
     }

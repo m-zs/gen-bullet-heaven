@@ -267,6 +267,7 @@ MonoBehaviour:
   attackDamage: 10
   spellDamage: 10
   cooldownReduction: 0.1
+  durationIncrease: 0
 --- !u!114 &-7779334200729730659
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -281,6 +282,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterAttributes: {fileID: 0}
   abilityManager: {fileID: 0}
+  teamId: 0
 --- !u!114 &4795954536140462003
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -293,5 +295,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 982fe45488b150942b2800023a00a835, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startingAbilities:
-  - {fileID: 11400000, guid: 1ad4d8ed0e427344ba9bbf31311d5f0b, type: 2}
+  startingAbilities: []
+  addRandomAbility: 1

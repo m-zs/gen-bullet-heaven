@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(PlayerMovement))]
@@ -10,6 +8,7 @@ public class PlayerManager : CharacterManager
     public override void Start()
     {
         base.Start();
+        teamId = 1;
         playerMovement = GetComponent<PlayerMovement>();
     }
 

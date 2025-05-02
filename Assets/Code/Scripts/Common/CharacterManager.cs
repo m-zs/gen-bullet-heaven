@@ -6,6 +6,7 @@ public class CharacterManager : MonoBehaviour
 {
     public CharacterAttributes characterAttributes;
     public AbilityManager abilityManager;
+    public int teamId = 0;
 
     public virtual void Start()
     {

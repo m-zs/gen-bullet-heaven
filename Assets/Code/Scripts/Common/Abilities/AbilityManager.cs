@@ -25,9 +25,9 @@ public class AbilityManager : MonoBehaviour
         abilityTargetingTypeMappings = new()
         {
             { AbilityAssignment.Melee, new[] {
-                AbilityTargetingType.Projectile,
-            //  AbilityTargetingType.Targeted,
-             AbilityTargetingType.AreaOfEffect
+                // AbilityTargetingType.Projectile,
+             AbilityTargetingType.Targeted,
+            //  AbilityTargetingType.AreaOfEffect
              } },
             // { AbilityAssignment.Spell, new[] { AbilityTargetingType.Projectile, AbilityTargetingType.Targeted, AbilityTargetingType.AreaOfEffect } },
             // { AbilityAssignment.Summon, new[] { AbilityTargetingType.AreaOfEffect, AbilityTargetingType.Projectile, AbilityTargetingType.Targeted } }
@@ -161,10 +161,15 @@ public class AbilityManager : MonoBehaviour
 
     private bool InitializeTargetedAbility(TargetedAbility ability, CharacterManager target)
     {
-        if (name == null || IsOnCooldown(name) || target == null)
+        if (ability == null || IsOnCooldown(ability.abilityName) || target == null)
         {
             return false;
         }
+
+        timeLastUsed[ability.abilityName] = Time.time;
+        GameObject targetedAbilityObj = new("TargetedAbility");
+        Targeted targetedAbility = targetedAbilityObj.AddComponent<Targeted>();
+        targetedAbility.Use(target);
 
         return true;
     }

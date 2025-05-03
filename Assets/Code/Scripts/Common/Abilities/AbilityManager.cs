@@ -4,7 +4,7 @@ using UnityEngine;
 public class AbilityManager : MonoBehaviour
 {
     [SerializeField] public Ability[] startingAbilities;
-    private Dictionary<string, Ability> abilities = new();
+    public Dictionary<string, Ability> abilities = new();
     private Dictionary<string, float> timeLastUsed = new();
 
     [SerializeField] Dictionary<AbilityAssignment, AbilityTargetingType[]> abilityTargetingTypeMappings;
@@ -22,14 +22,12 @@ public class AbilityManager : MonoBehaviour
     {
         characterManager = GetComponent<CharacterManager>();
 
-        if (!addRandomAbility) return;
-
         abilityTargetingTypeMappings = new()
         {
             { AbilityAssignment.Melee, new[] {
                 AbilityTargetingType.Projectile,
             //  AbilityTargetingType.Targeted,
-            //  AbilityTargetingType.AreaOfEffect
+             AbilityTargetingType.AreaOfEffect
              } },
             // { AbilityAssignment.Spell, new[] { AbilityTargetingType.Projectile, AbilityTargetingType.Targeted, AbilityTargetingType.AreaOfEffect } },
             // { AbilityAssignment.Summon, new[] { AbilityTargetingType.AreaOfEffect, AbilityTargetingType.Projectile, AbilityTargetingType.Targeted } }
@@ -39,34 +37,152 @@ public class AbilityManager : MonoBehaviour
         {
             AddAbility(ability);
         }
-        GenerateAbility();
+
+        if (addRandomAbility)
+        {
+            GenerateAbility();
+        }
     }
 
     private void Update()
     {
         foreach (var ability in abilities)
         {
-            if (ability.Value.aimType == AbilityAimType.Closest)
+            if (ability.Value is ProjectileAbility projectileAbility)
             {
-                CharacterManager currentTarget = EnemyScanner.GetNearestEnemy(transform.position, 100f, characterManager.teamId);
-                UseAbility(ability.Key, characterManager.transform.position, currentTarget.transform.position);
+                UseProjectileAbility(projectileAbility);
             }
 
-            if (ability.Value.aimType == AbilityAimType.Random)
+            if (ability.Value is TargetedAbility targetedAbility)
             {
-                CharacterManager currentTarget = EnemyScanner.GetRandomEnemyOnScreen(mainCamera, characterManager.teamId);
-                if (currentTarget != null)
-                {
-                    UseAbility(ability.Key, characterManager.transform.position, currentTarget.transform.position);
-                }
+                UseTargetedAbility(targetedAbility);
             }
 
-            if (ability.Value.aimType == AbilityAimType.Aim)
+            if (ability.Value is AreaOfEffectAbility areaOfEffectAbility)
             {
-                Vector2 cursorPosition = GetCursorWorldPosition();
-                UseAbility(ability.Key, characterManager.transform.position, cursorPosition);
+                UseAreaOfEffectAbility(areaOfEffectAbility);
             }
         }
+    }
+
+    private void UseProjectileAbility(ProjectileAbility ability)
+    {
+        if (ability.aimType == AbilityAimType.Closest)
+        {
+            CharacterManager currentTarget = EnemyScanner.GetNearestEnemy(transform.position, 100f, characterManager.teamId);
+            InitializeProjectileAbility(ability, characterManager.transform.position, currentTarget.transform.position);
+        }
+
+        if (ability.aimType == AbilityAimType.Random)
+        {
+            CharacterManager currentTarget = EnemyScanner.GetRandomEnemyOnScreen(mainCamera, characterManager.teamId);
+            if (currentTarget != null)
+            {
+                InitializeProjectileAbility(ability, characterManager.transform.position, currentTarget.transform.position);
+            }
+        }
+
+        if (ability.aimType == AbilityAimType.Aim)
+        {
+            Vector2 cursorPosition = GetCursorWorldPosition();
+            InitializeProjectileAbility(ability, characterManager.transform.position, cursorPosition);
+        }
+    }
+
+    private void UseTargetedAbility(TargetedAbility ability)
+    {
+        if (ability.aimType == AbilityAimType.Closest)
+        {
+            CharacterManager currentTarget = EnemyScanner.GetNearestEnemy(transform.position, 100f, characterManager.teamId);
+            InitializeTargetedAbility(ability, currentTarget);
+        }
+
+        if (ability.aimType == AbilityAimType.Random)
+        {
+            CharacterManager currentTarget = EnemyScanner.GetRandomEnemyOnScreen(mainCamera, characterManager.teamId);
+            if (currentTarget != null)
+            {
+                InitializeTargetedAbility(ability, currentTarget);
+            }
+        }
+
+        if (ability.aimType == AbilityAimType.Aim)
+        {
+            CharacterManager currentTarget = EnemyScanner.GetRandomEnemyOnScreen(mainCamera, characterManager.teamId); // todo: add a way to get hover target
+            if (currentTarget != null)
+            {
+                InitializeTargetedAbility(ability, currentTarget);
+            }
+        }
+    }
+
+    private void UseAreaOfEffectAbility(AreaOfEffectAbility ability)
+    {
+        if (ability.aimType == AbilityAimType.Closest)
+        {
+            CharacterManager currentTarget = EnemyScanner.GetNearestEnemy(transform.position, 100f, characterManager.teamId);
+            InitializeAreaOfEffectAbility(ability, currentTarget.transform.position);
+        }
+
+        if (ability.aimType == AbilityAimType.Random)
+        {
+            CharacterManager currentTarget = EnemyScanner.GetRandomEnemyOnScreen(mainCamera, characterManager.teamId);
+            InitializeAreaOfEffectAbility(ability, currentTarget.transform.position);
+        }
+
+        if (ability.aimType == AbilityAimType.Aim)
+        {
+            Vector2 cursorPosition = GetCursorWorldPosition();
+            InitializeAreaOfEffectAbility(ability, cursorPosition);
+        }
+    }
+
+    private bool InitializeProjectileAbility(ProjectileAbility ability, Vector3 from, Vector3 to)
+    {
+        if (ability == null || IsOnCooldown(ability.abilityName))
+        {
+            return false;
+        }
+
+        timeLastUsed[ability.abilityName] = Time.time;
+        GameObject projectileObj = new("PlayerProjectile");
+        Projectile projectile = projectileObj.AddComponent<Projectile>();
+
+        if (to != null)
+        {
+            projectile.Use(from, to);
+        }
+        else
+        {
+            projectile.Use(from);
+        }
+        return true;
+    }
+
+    private bool InitializeTargetedAbility(TargetedAbility ability, CharacterManager target)
+    {
+        if (name == null || IsOnCooldown(name) || target == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool InitializeAreaOfEffectAbility(AreaOfEffectAbility ability, Vector3 center)
+    {
+        if (ability == null || IsOnCooldown(ability.abilityName) || center == null)
+        {
+            return false;
+        }
+
+        timeLastUsed[ability.abilityName] = Time.time;
+        GameObject aoe = new("Aoe");
+        AreaOfEffect aoeComponent = aoe.AddComponent<AreaOfEffect>();
+        aoeComponent.radius = ability.radius;
+        aoeComponent.Use(center);
+
+        return true;
     }
 
     private Vector2 GetCursorWorldPosition()
@@ -74,11 +190,6 @@ public class AbilityManager : MonoBehaviour
         Vector3 mousePos = Input.mousePosition;
         mousePos.z = -mainCamera.transform.position.z;
         return mainCamera.ScreenToWorldPoint(mousePos);
-    }
-
-    public List<CharacterManager> GetEnemiesInRange(float range)
-    {
-        return EnemyScanner.GetEnemiesInRadius(transform.position, range, characterManager.teamId);
     }
 
     public bool AddAbility(Ability ability)
@@ -92,38 +203,6 @@ public class AbilityManager : MonoBehaviour
         return true;
     }
 
-    public bool UseAbility(string name, Vector3 initiator, Vector3 target)
-    {
-        if (name == null)
-        {
-            return false;
-        }
-
-        if (IsOnCooldown(name))
-        {
-            return false;
-        }
-
-        if (abilities.TryGetValue(name, out Ability ability))
-        {
-            timeLastUsed[ability.abilityName] = Time.time;
-
-            GameObject projectileObj = new("PlayerProjectile");
-            Projectile projectile = projectileObj.AddComponent<Projectile>();
-
-            if (target != null)
-            {
-                projectile.Use(initiator, target);
-            }
-            else
-            {
-                projectile.Use(initiator);
-            }
-            return true;
-        }
-
-        return false;
-    }
 
     private bool IsOnCooldown(string abilityName)
     {
@@ -144,18 +223,34 @@ public class AbilityManager : MonoBehaviour
         Debug.Log($"Ability Activation Type: {abilityActivationType}");
         Debug.Log($"Ability Aim Type: {abilityAimType}");
 
-        Ability ability = ScriptableObject.CreateInstance<Ability>();
-        ability.abilityName = System.Guid.NewGuid().ToString();
-        ability.abilityClass = gameObject.AddComponent<Projectile>();
-        ability.abilityAssignment = abilityAssignment;
-        ability.abilityTargetingType = abilityTargetingType;
-        ability.damageType = damageType;
-        ability.activationType = abilityActivationType;
-        ability.cooldown = 1f;
-        ability.damage = 10f;
-        ability.aimType = abilityAimType;
+        Ability ability = null;
 
-        AddAbility(ability);
+        if (abilityTargetingType == AbilityTargetingType.Projectile)
+        {
+            ability = ScriptableObject.CreateInstance<ProjectileAbility>();
+        }
+        else if (abilityTargetingType == AbilityTargetingType.Targeted)
+        {
+            ability = ScriptableObject.CreateInstance<TargetedAbility>();
+        }
+        else if (abilityTargetingType == AbilityTargetingType.AreaOfEffect)
+        {
+            ability = ScriptableObject.CreateInstance<AreaOfEffectAbility>();
+            (ability as AreaOfEffectAbility).radius = 100f;
+        }
+
+        if (ability)
+        {
+            ability.abilityName = System.Guid.NewGuid().ToString();
+            ability.abilityAssignment = abilityAssignment;
+            ability.abilityTargetingType = abilityTargetingType;
+            ability.damageType = damageType;
+            ability.activationType = abilityActivationType;
+            ability.cooldown = 1f;
+            ability.damage = 10f;
+            ability.aimType = abilityAimType;
+            AddAbility(ability);
+        }
     }
 
     private T GetRandomEnumValue<T>()

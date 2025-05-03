@@ -1,13 +1,15 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(SpriteRenderer))]
-[RequireComponent(typeof(Rigidbody2D))]
-public class Projectile : MonoBehaviour, IProjectileAbility
+public class AreaOfEffect : MonoBehaviour, IAreaOfEffectAbility
 {
-    [SerializeField] private float speed = 10f;
-    [SerializeField] private float damage = 10f;
-    [SerializeField] private bool destroyOnHit = true;
-    [SerializeField]
+    private SpriteRenderer spriteRenderer;
+    private float duration = 1f;
+    private float timeUsed = 0f;
+    public float radius = 100f;
+
     private Color[] possibleColors = new Color[]
     {
         Color.red,
@@ -18,17 +20,20 @@ public class Projectile : MonoBehaviour, IProjectileAbility
         Color.magenta
     };
 
-    private SpriteRenderer spriteRenderer;
-    private Rigidbody2D rb;
-    private Vector3 direction;
-    private bool isSpawned;
-
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
-        rb = GetComponent<Rigidbody2D>();
-        rb.gravityScale = 0;
+        transform.localScale = Vector3.one * (radius / 5f);
     }
+
+    private void Update()
+    {
+        if (Time.time - timeUsed >= duration)
+        {
+            Destroy(gameObject);
+        }
+    }
+
 
     private void CreateRandomShape()
     {
@@ -84,34 +89,15 @@ public class Projectile : MonoBehaviour, IProjectileAbility
         spriteRenderer.sprite = sprite;
     }
 
-    public void Spawn(Vector3 origin, Vector3 direction)
+    public void Spawn(Vector3 center)
     {
-        transform.position = origin;
-        this.direction = direction.normalized;
-        isSpawned = true;
+        transform.position = center;
         CreateRandomShape();
     }
 
-    private void Update()
+    public void Use(Vector3 center)
     {
-        if (!isSpawned) return;
-        Vector3 movement = new Vector3(direction.x, direction.y, 0) * speed * Time.deltaTime;
-        transform.position += movement;
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-    }
-
-    public void Use(Vector3 origin)
-    {
-        Debug.Log("Using projectile");
-        Vector2 randomDirection = Random.insideUnitCircle.normalized;
-        Spawn(origin, new Vector3(randomDirection.x, randomDirection.y, 0));
-    }
-
-    public void Use(Vector3 origin, Vector3 direction)
-    {
-        Spawn(origin, direction - origin);
+        timeUsed = Time.time;
+        Spawn(center);
     }
 }

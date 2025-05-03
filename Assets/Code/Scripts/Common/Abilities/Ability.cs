@@ -17,8 +17,8 @@ public enum AbilityAimType
 public enum AbilityTargetingType
 {
     Projectile,
-    // AreaOfEffect,
-    // Targeted,
+    AreaOfEffect,
+    Targeted,
 }
 
 public enum MinionAbilityTargetingType
@@ -106,10 +106,20 @@ public enum SummonStatModifier
     MinionAreaOfEffect
 }
 
-public interface IAbility
+public interface IProjectileAbility
 {
-    void Use(Vector3 origin);
-    void Use(Vector3 origin, Vector3 direction);
+    void Use(Vector3 from);
+    void Use(Vector3 from, Vector3 direction);
+}
+
+public interface ITargetedAbility
+{
+    void Use(CharacterManager target);
+}
+
+public interface IAreaOfEffectAbility
+{
+    void Use(Vector3 center);
 }
 
 [CreateAssetMenu(menuName = "Abilities/Create New Ability")]
@@ -124,6 +134,28 @@ public class Ability : ScriptableObject
     [SerializeField] public DamageType damageType;
     [SerializeField] public AbilityActivationType activationType;
     [SerializeField] public CharacterResource resourceUsed = CharacterResource.None;
-    [SerializeField] public IAbility abilityClass;
     [SerializeField] public AbilityAimType aimType;
 }
+
+[CreateAssetMenu(menuName = "Abilities/Create New Ability/Projectile")]
+public class ProjectileAbility : Ability
+{
+    public AbilityTargetingType targetingType = AbilityTargetingType.Projectile;
+    public IProjectileAbility abilityClass;
+}
+
+[CreateAssetMenu(menuName = "Abilities/Create New Ability/Targeted")]
+public class TargetedAbility : Ability
+{
+    public AbilityTargetingType targetingType = AbilityTargetingType.Targeted;
+    public ITargetedAbility abilityClass;
+}
+
+[CreateAssetMenu(menuName = "Abilities/Create New Ability/AreaOfEffect")]
+public class AreaOfEffectAbility : Ability
+{
+    public AbilityTargetingType targetingType = AbilityTargetingType.AreaOfEffect;
+    public IAreaOfEffectAbility abilityClass;
+    [SerializeField] public float radius = 10;
+}
+

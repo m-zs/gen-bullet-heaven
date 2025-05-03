@@ -5,6 +5,7 @@ public class Targeted : MonoBehaviour, ITargetedAbility
   private float duration = 1f;
   private float timeUsed = 0f;
   private GameObject textObj;
+  public CharacterManager owner;
 
   private void Update()
   {
@@ -18,7 +19,6 @@ public class Targeted : MonoBehaviour, ITargetedAbility
   public void Use(CharacterManager target)
   {
     if (target == null) return;
-
     timeUsed = Time.time;
     transform.position = target.transform.position;
 

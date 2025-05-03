@@ -77,6 +77,10 @@ public static class EnemyScanner
   public static CharacterManager GetRandomEnemyOnScreen(Camera camera, int teamId)
   {
     var enemies = GetEnemiesInViewport(camera, teamId);
+    if (enemies.Count == 0)
+    {
+      return null;
+    }
     return enemies[Random.Range(0, enemies.Count)];
   }
 }

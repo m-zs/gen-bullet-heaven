@@ -75,7 +75,10 @@ public class AbilityManager : MonoBehaviour
         if (ability.aimType == AbilityAimType.Closest)
         {
             CharacterManager currentTarget = EnemyScanner.GetNearestEnemy(transform.position, 100f, characterManager.teamId);
-            InitializeProjectileAbility(ability, characterManager.transform.position, currentTarget.transform.position);
+            if (currentTarget != null)
+            {
+                InitializeProjectileAbility(ability, characterManager.transform.position, currentTarget.transform.position);
+            }
         }
 
         if (ability.aimType == AbilityAimType.Random)
@@ -99,7 +102,10 @@ public class AbilityManager : MonoBehaviour
         if (ability.aimType == AbilityAimType.Closest)
         {
             CharacterManager currentTarget = EnemyScanner.GetNearestEnemy(transform.position, 100f, characterManager.teamId);
-            InitializeTargetedAbility(ability, currentTarget);
+            if (currentTarget != null)
+            {
+                InitializeTargetedAbility(ability, currentTarget);
+            }
         }
 
         if (ability.aimType == AbilityAimType.Random)
@@ -113,7 +119,11 @@ public class AbilityManager : MonoBehaviour
 
         if (ability.aimType == AbilityAimType.Aim)
         {
-            InitializeTargetedAbility(ability, GetAimTarget());
+            CharacterManager currentTarget = GetAimTarget();
+            if (currentTarget != null)
+            {
+                InitializeTargetedAbility(ability, currentTarget);
+            }
         }
     }
 
@@ -122,19 +132,28 @@ public class AbilityManager : MonoBehaviour
         if (ability.aimType == AbilityAimType.Closest)
         {
             CharacterManager currentTarget = EnemyScanner.GetNearestEnemy(transform.position, 100f, characterManager.teamId);
-            InitializeAreaOfEffectAbility(ability, currentTarget.transform.position);
+            if (currentTarget != null)
+            {
+                InitializeAreaOfEffectAbility(ability, currentTarget.transform.position);
+            }
         }
 
         if (ability.aimType == AbilityAimType.Random)
         {
             CharacterManager currentTarget = EnemyScanner.GetRandomEnemyOnScreen(mainCamera, characterManager.teamId);
-            InitializeAreaOfEffectAbility(ability, currentTarget.transform.position);
+            if (currentTarget != null)
+            {
+                InitializeAreaOfEffectAbility(ability, currentTarget.transform.position);
+            }
         }
 
         if (ability.aimType == AbilityAimType.Aim)
         {
             Vector2 cursorPosition = GetAimPosition();
-            InitializeAreaOfEffectAbility(ability, cursorPosition);
+            if (cursorPosition != null)
+            {
+                InitializeAreaOfEffectAbility(ability, cursorPosition);
+            }
         }
     }
 
@@ -148,6 +167,7 @@ public class AbilityManager : MonoBehaviour
         timeLastUsed[ability.abilityName] = Time.time;
         GameObject projectileObj = new("PlayerProjectile");
         Projectile projectile = projectileObj.AddComponent<Projectile>();
+        projectile.owner = characterManager;
 
         if (to != null)
         {
@@ -170,6 +190,7 @@ public class AbilityManager : MonoBehaviour
         timeLastUsed[ability.abilityName] = Time.time;
         GameObject targetedAbilityObj = new("TargetedAbility");
         Targeted targetedAbility = targetedAbilityObj.AddComponent<Targeted>();
+        targetedAbility.owner = characterManager;
         targetedAbility.Use(target);
 
         return true;
@@ -185,6 +206,7 @@ public class AbilityManager : MonoBehaviour
         timeLastUsed[ability.abilityName] = Time.time;
         GameObject aoe = new("Aoe");
         AreaOfEffect aoeComponent = aoe.AddComponent<AreaOfEffect>();
+        aoeComponent.owner = characterManager;
         aoeComponent.radius = ability.radius;
         aoeComponent.Use(center);
 

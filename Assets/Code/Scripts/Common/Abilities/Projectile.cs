@@ -2,12 +2,15 @@ using UnityEngine;
 
 [RequireComponent(typeof(SpriteRenderer))]
 [RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(CircleCollider2D))]
 public class Projectile : MonoBehaviour, IProjectileAbility
 {
     [SerializeField] private float speed = 10f;
     [SerializeField] private float damage = 10f;
     [SerializeField] private bool destroyOnHit = true;
-    [SerializeField]
+    private CircleCollider2D circleCollider;
+    public CharacterManager owner;
+
     private Color[] possibleColors = new Color[]
     {
         Color.red,
@@ -28,6 +31,8 @@ public class Projectile : MonoBehaviour, IProjectileAbility
         spriteRenderer = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
         rb.gravityScale = 0;
+        circleCollider = GetComponent<CircleCollider2D>();
+        circleCollider.isTrigger = true;
     }
 
     private void CreateRandomShape()
@@ -99,13 +104,29 @@ public class Projectile : MonoBehaviour, IProjectileAbility
         transform.position += movement;
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerEnter2D(Collider2D other)
     {
+        if (other.gameObject.TryGetComponent(out CharacterManager character))
+        {
+            if (!CombatHelpers.IsEnemy(character, owner))
+            {
+                return;
+            }
+        }
+
+        if (other.gameObject.TryGetComponent(out IDamageable damageable))
+        {
+            Debug.Log("Hit damageable");
+            damageable.TakeDamage(damage);
+            if (destroyOnHit)
+            {
+                Destroy(gameObject);
+            }
+        }
     }
 
     public void Use(Vector3 origin)
     {
-        Debug.Log("Using projectile");
         Vector2 randomDirection = Random.insideUnitCircle.normalized;
         Spawn(origin, new Vector3(randomDirection.x, randomDirection.y, 0));
     }

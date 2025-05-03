@@ -3,12 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(SpriteRenderer))]
+[RequireComponent(typeof(CircleCollider2D))]
 public class AreaOfEffect : MonoBehaviour, IAreaOfEffectAbility
 {
     private SpriteRenderer spriteRenderer;
     private float duration = 1f;
     private float timeUsed = 0f;
     public float radius = 100f;
+    private CircleCollider2D circleCollider;
+    public CharacterManager owner;
+    [SerializeField] private float damage = 100f;
 
     private Color[] possibleColors = new Color[]
     {
@@ -34,6 +38,22 @@ public class AreaOfEffect : MonoBehaviour, IAreaOfEffectAbility
         }
     }
 
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.gameObject.TryGetComponent(out CharacterManager character))
+        {
+            if (!CombatHelpers.IsEnemy(character, owner))
+            {
+                return;
+            }
+        }
+
+        if (other.gameObject.TryGetComponent(out IDamageable damageable))
+        {
+            Debug.Log("Hit damageable");
+            damageable.TakeDamage(damage);
+        }
+    }
 
     private void CreateRandomShape()
     {

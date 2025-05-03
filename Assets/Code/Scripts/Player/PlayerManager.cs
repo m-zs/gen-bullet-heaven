@@ -20,4 +20,9 @@ public class PlayerManager : CharacterManager
     {
         playerMovement.Move(characterAttributes.movementSpeed);
     }
+
+    protected override void Die()
+    {
+        Debug.Log("Player died");
+    }
 }

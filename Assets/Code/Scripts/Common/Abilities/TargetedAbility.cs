@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class Targeted : MonoBehaviour, ITargetedAbility
 {
+  [SerializeField] private float damage = 50f;
   private float duration = 1f;
   private float timeUsed = 0f;
   private GameObject textObj;
@@ -30,5 +31,10 @@ public class Targeted : MonoBehaviour, ITargetedAbility
     textMesh.color = Color.red;
     textMesh.alignment = TextAlignment.Center;
     textMesh.anchor = TextAnchor.MiddleCenter;
+
+    if (target.GetComponent<IDamageable>() != null)
+    {
+      target.GetComponent<IDamageable>().TakeDamage(damage);
+    }
   }
 }

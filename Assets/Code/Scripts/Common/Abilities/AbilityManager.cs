@@ -15,6 +15,7 @@ public class AbilityManager : MonoBehaviour
     private void Awake()
     {
         characterManager = GetComponent<CharacterManager>();
+        mainCamera = Camera.main;
 
         abilityTargetingTypeMappings = new()
         {

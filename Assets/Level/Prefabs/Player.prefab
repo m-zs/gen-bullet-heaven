@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 1534622988433713737}
   - component: {fileID: 2805381440060646838}
   - component: {fileID: -7779334200729730659}
-  - component: {fileID: 4795954536140462003}
+  - component: {fileID: 3390131581642690464}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -281,9 +281,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   characterAttributes: {fileID: 0}
-  abilityManager: {fileID: 0}
   teamId: 0
---- !u!114 &4795954536140462003
+--- !u!114 &3390131581642690464
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -292,7 +291,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 864790833873766143}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 982fe45488b150942b2800023a00a835, type: 3}
+  m_Script: {fileID: 11500000, guid: 3dc586453aad15a49a43f335fea3f839, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   startingAbilities: []

@@ -8,15 +8,9 @@ public class AbilityManager : MonoBehaviour
     private Dictionary<string, float> timeLastUsed = new();
 
     [SerializeField] Dictionary<AbilityAssignment, AbilityTargetingType[]> abilityTargetingTypeMappings;
-    private CharacterManager characterManager;
+    protected CharacterManager characterManager;
     [SerializeField] private bool addRandomAbility = false;
-
-    private Camera mainCamera;
-
-    private void Start()
-    {
-        mainCamera = Camera.main;
-    }
+    protected Camera mainCamera;
 
     private void Awake()
     {
@@ -25,9 +19,9 @@ public class AbilityManager : MonoBehaviour
         abilityTargetingTypeMappings = new()
         {
             { AbilityAssignment.Melee, new[] {
-                // AbilityTargetingType.Projectile,
-             AbilityTargetingType.Targeted,
-            //  AbilityTargetingType.AreaOfEffect
+                AbilityTargetingType.Projectile,
+                AbilityTargetingType.Targeted,
+                AbilityTargetingType.AreaOfEffect
              } },
             // { AbilityAssignment.Spell, new[] { AbilityTargetingType.Projectile, AbilityTargetingType.Targeted, AbilityTargetingType.AreaOfEffect } },
             // { AbilityAssignment.Summon, new[] { AbilityTargetingType.AreaOfEffect, AbilityTargetingType.Projectile, AbilityTargetingType.Targeted } }
@@ -42,6 +36,16 @@ public class AbilityManager : MonoBehaviour
         {
             GenerateAbility();
         }
+    }
+
+    protected virtual Vector2 GetAimPosition()
+    {
+        return Vector2.zero;
+    }
+
+    protected virtual CharacterManager GetAimTarget()
+    {
+        return null;
     }
 
     private void Update()
@@ -84,7 +88,7 @@ public class AbilityManager : MonoBehaviour
 
         if (ability.aimType == AbilityAimType.Aim)
         {
-            Vector2 cursorPosition = GetCursorWorldPosition();
+            Vector2 cursorPosition = GetAimPosition();
             InitializeProjectileAbility(ability, characterManager.transform.position, cursorPosition);
         }
     }
@@ -108,11 +112,7 @@ public class AbilityManager : MonoBehaviour
 
         if (ability.aimType == AbilityAimType.Aim)
         {
-            CharacterManager currentTarget = EnemyScanner.GetRandomEnemyOnScreen(mainCamera, characterManager.teamId); // todo: add a way to get hover target
-            if (currentTarget != null)
-            {
-                InitializeTargetedAbility(ability, currentTarget);
-            }
+            InitializeTargetedAbility(ability, GetAimTarget());
         }
     }
 
@@ -132,7 +132,7 @@ public class AbilityManager : MonoBehaviour
 
         if (ability.aimType == AbilityAimType.Aim)
         {
-            Vector2 cursorPosition = GetCursorWorldPosition();
+            Vector2 cursorPosition = GetAimPosition();
             InitializeAreaOfEffectAbility(ability, cursorPosition);
         }
     }
@@ -188,13 +188,6 @@ public class AbilityManager : MonoBehaviour
         aoeComponent.Use(center);
 
         return true;
-    }
-
-    private Vector2 GetCursorWorldPosition()
-    {
-        Vector3 mousePos = Input.mousePosition;
-        mousePos.z = -mainCamera.transform.position.z;
-        return mainCamera.ScreenToWorldPoint(mousePos);
     }
 
     public bool AddAbility(Ability ability)

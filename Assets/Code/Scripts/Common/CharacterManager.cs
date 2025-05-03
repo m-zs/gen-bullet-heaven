@@ -5,12 +5,11 @@ using UnityEngine;
 public class CharacterManager : MonoBehaviour
 {
     public CharacterAttributes characterAttributes;
-    public AbilityManager abilityManager;
+    public virtual AbilityManager abilityManager { get; private set; }
     public int teamId = 0;
 
-    public virtual void Start()
+    protected virtual void Start()
     {
         characterAttributes = GetComponent<CharacterAttributes>();
-        abilityManager = GetComponent<AbilityManager>();
     }
 }

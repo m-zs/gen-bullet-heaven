@@ -1,92 +1,27 @@
 using UnityEngine;
 
-[RequireComponent(typeof(SpriteRenderer))]
-[RequireComponent(typeof(Rigidbody2D))]
-[RequireComponent(typeof(CircleCollider2D))]
 public class Projectile : MonoBehaviour, IProjectileAbility
 {
     [SerializeField] private float speed = 10f;
     [SerializeField] private float damage = 10f;
     [SerializeField] private bool destroyOnHit = true;
-    private CircleCollider2D circleCollider;
-    public CharacterManager owner;
-
-    private Color[] possibleColors = new Color[]
-    {
-        Color.red,
-        Color.blue,
-        Color.green,
-        Color.yellow,
-        Color.cyan,
-        Color.magenta
-    };
+    private Collider2D projectileCollider;
+    [HideInInspector] public CharacterManager owner;
 
     private SpriteRenderer spriteRenderer;
-    private Rigidbody2D rb;
     private Vector3 direction;
     private bool isSpawned;
 
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
-        rb = GetComponent<Rigidbody2D>();
-        rb.gravityScale = 0;
-        circleCollider = GetComponent<CircleCollider2D>();
-        circleCollider.isTrigger = true;
-    }
 
-    private void CreateRandomShape()
-    {
-        Texture2D texture = new Texture2D(32, 32);
-        Color[] colors = new Color[32 * 32];
-
-        // Choose a random shape type
-        int shapeType = Random.Range(0, 3);
-        Color shapeColor = possibleColors[Random.Range(0, possibleColors.Length)];
-
-        switch (shapeType)
+        projectileCollider = GetComponent<Collider2D>();
+        if (GetComponent<Collider2D>() != null)
         {
-            case 0: // Circle
-                for (int y = 0; y < 32; y++)
-                {
-                    for (int x = 0; x < 32; x++)
-                    {
-                        float dx = x - 16;
-                        float dy = y - 16;
-                        float distance = Mathf.Sqrt(dx * dx + dy * dy);
-                        colors[y * 32 + x] = distance < 14 ? shapeColor : Color.clear;
-                    }
-                }
-                break;
-
-            case 1: // Square
-                for (int y = 0; y < 32; y++)
-                {
-                    for (int x = 0; x < 32; x++)
-                    {
-                        colors[y * 32 + x] = (x > 8 && x < 24 && y > 8 && y < 24) ? shapeColor : Color.clear;
-                    }
-                }
-                break;
-
-            case 2: // Triangle
-                for (int y = 0; y < 32; y++)
-                {
-                    for (int x = 0; x < 32; x++)
-                    {
-                        float normalizedX = (x - 16) / 16f;
-                        float normalizedY = (y - 16) / 16f;
-                        colors[y * 32 + x] = (Mathf.Abs(normalizedX) + normalizedY < 1) ? shapeColor : Color.clear;
-                    }
-                }
-                break;
+            projectileCollider = GetComponent<Collider2D>();
+            projectileCollider.isTrigger = true;
         }
-
-        texture.SetPixels(colors);
-        texture.Apply();
-
-        Sprite sprite = Sprite.Create(texture, new Rect(0, 0, 32, 32), new Vector2(0.5f, 0.5f));
-        spriteRenderer.sprite = sprite;
     }
 
     public void Spawn(Vector3 origin, Vector3 direction)
@@ -94,7 +29,10 @@ public class Projectile : MonoBehaviour, IProjectileAbility
         transform.position = origin;
         this.direction = direction.normalized;
         isSpawned = true;
-        CreateRandomShape();
+
+        // Left to right based
+        float angle = Mathf.Atan2(this.direction.y, this.direction.x) * Mathf.Rad2Deg;
+        transform.rotation = Quaternion.Euler(0, 0, angle);
     }
 
     private void Update()

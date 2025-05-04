@@ -6,7 +6,6 @@ public class AbilityManager : MonoBehaviour
     [SerializeField] public Ability[] startingAbilities;
     public Dictionary<string, Ability> abilities = new();
     private Dictionary<string, float> timeLastUsed = new();
-
     [SerializeField] Dictionary<AbilityAssignment, AbilityTargetingType[]> abilityTargetingTypeMappings;
     protected CharacterManager characterManager;
     [SerializeField] private bool addRandomAbility = false;
@@ -21,8 +20,8 @@ public class AbilityManager : MonoBehaviour
         {
             { AbilityAssignment.Melee, new[] {
                 AbilityTargetingType.Projectile,
-                AbilityTargetingType.Targeted,
-                AbilityTargetingType.AreaOfEffect
+                // AbilityTargetingType.Targeted,
+                // AbilityTargetingType.AreaOfEffect
              } },
             // { AbilityAssignment.Spell, new[] { AbilityTargetingType.Projectile, AbilityTargetingType.Targeted, AbilityTargetingType.AreaOfEffect } },
             // { AbilityAssignment.Summon, new[] { AbilityTargetingType.AreaOfEffect, AbilityTargetingType.Projectile, AbilityTargetingType.Targeted } }
@@ -165,8 +164,9 @@ public class AbilityManager : MonoBehaviour
         }
 
         timeLastUsed[ability.abilityName] = Time.time;
-        GameObject projectileObj = new("PlayerProjectile");
-        Projectile projectile = projectileObj.AddComponent<Projectile>();
+
+        GameObject projectileObj = Instantiate((ability.abilityClass as MonoBehaviour).gameObject);
+        Projectile projectile = projectileObj.GetComponent<Projectile>();
         projectile.owner = characterManager;
 
         if (to != null)
@@ -224,7 +224,6 @@ public class AbilityManager : MonoBehaviour
         return true;
     }
 
-
     private bool IsOnCooldown(string abilityName)
     {
         return timeLastUsed.ContainsKey(abilityName) && Time.time - timeLastUsed[abilityName] < abilities[abilityName].cooldown;
@@ -249,15 +248,29 @@ public class AbilityManager : MonoBehaviour
         if (abilityTargetingType == AbilityTargetingType.Projectile)
         {
             ability = ScriptableObject.CreateInstance<ProjectileAbility>();
+            Projectile projectile = AbilityPrefabs.Instance.GetRandomProjectile();
+            if (projectile != null)
+            {
+                (ability as ProjectileAbility).abilityClass = projectile;
+            }
         }
         else if (abilityTargetingType == AbilityTargetingType.Targeted)
         {
             ability = ScriptableObject.CreateInstance<TargetedAbility>();
+            Targeted targeted = AbilityPrefabs.Instance.GetRandomTargeted();
+            if (targeted != null)
+            {
+                (ability as TargetedAbility).abilityClass = targeted;
+            }
         }
         else if (abilityTargetingType == AbilityTargetingType.AreaOfEffect)
         {
             ability = ScriptableObject.CreateInstance<AreaOfEffectAbility>();
-            (ability as AreaOfEffectAbility).radius = 100f;
+            AreaOfEffect aoe = AbilityPrefabs.Instance.GetRandomAoe();
+            if (aoe != null)
+            {
+                (ability as AreaOfEffectAbility).abilityClass = aoe;
+            }
         }
 
         if (ability)

@@ -156,6 +156,6 @@ public class AreaOfEffectAbility : Ability
 {
     public AbilityTargetingType targetingType = AbilityTargetingType.AreaOfEffect;
     public IAreaOfEffectAbility abilityClass;
-    [SerializeField] public float radius = 10;
+    [SerializeField] public float radius = 1;
 }
 

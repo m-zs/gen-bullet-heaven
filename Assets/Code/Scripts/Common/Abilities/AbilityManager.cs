@@ -19,9 +19,9 @@ public class AbilityManager : MonoBehaviour
         abilityTargetingTypeMappings = new()
         {
             { AbilityAssignment.Melee, new[] {
-                AbilityTargetingType.Projectile,
+                // AbilityTargetingType.Projectile,
                 // AbilityTargetingType.Targeted,
-                // AbilityTargetingType.AreaOfEffect
+                AbilityTargetingType.AreaOfEffect
              } },
             // { AbilityAssignment.Spell, new[] { AbilityTargetingType.Projectile, AbilityTargetingType.Targeted, AbilityTargetingType.AreaOfEffect } },
             // { AbilityAssignment.Summon, new[] { AbilityTargetingType.AreaOfEffect, AbilityTargetingType.Projectile, AbilityTargetingType.Targeted } }
@@ -204,11 +204,11 @@ public class AbilityManager : MonoBehaviour
         }
 
         timeLastUsed[ability.abilityName] = Time.time;
-        GameObject aoe = new("Aoe");
-        AreaOfEffect aoeComponent = aoe.AddComponent<AreaOfEffect>();
-        aoeComponent.owner = characterManager;
-        aoeComponent.radius = ability.radius;
-        aoeComponent.Use(center);
+        GameObject aoeObj = Instantiate((ability.abilityClass as MonoBehaviour).gameObject);
+        AreaOfEffect aoe = aoeObj.GetComponent<AreaOfEffect>();
+        aoe.owner = characterManager;
+        aoe.radius = ability.radius;
+        aoe.Use(center);
 
         return true;
     }

@@ -15,7 +15,6 @@ public class Projectile : MonoBehaviour, IProjectileAbility
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
-
         projectileCollider = GetComponent<Collider2D>();
         if (GetComponent<Collider2D>() != null)
         {
@@ -54,7 +53,6 @@ public class Projectile : MonoBehaviour, IProjectileAbility
 
         if (other.gameObject.TryGetComponent(out IDamageable damageable))
         {
-            Debug.Log("Hit damageable");
             damageable.TakeDamage(damage);
             if (destroyOnHit)
             {
